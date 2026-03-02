@@ -14,21 +14,50 @@ import java.util.List;
 public class TryIt {
 
     public static void main(String[] args) {
+
         TicketService service = new TicketService();
 
-        IncidentTicket t = service.createTicket("TCK-1001", "reporter@example.com", "Payment failing on checkout");
-        System.out.println("Created: " + t);
+        IncidentTicket t = service.createTicket(
+                "TCK-1001",
+                "reporter@example.com",
+                "Payment failing on checkout");
 
-        // Demonstrate post-creation mutation through service
-        service.assign(t, "agent@example.com");
-        service.escalateToCritical(t);
-        System.out.println("\nAfter service mutations: " + t);
+        System.out.println("Created:");
+        System.out.println(t);
 
-        // Demonstrate external mutation via leaked list reference
+        t = service.assign(t, "agent@example.com");
+        t = service.escalateToCritical(t);
+
+        System.out.println("\nAfter updates (new instances created):");
+        System.out.println(t);
+
+        System.out.println("\nAttempting external tag modification...");
+
         List<String> tags = t.getTags();
-        tags.add("HACKED_FROM_OUTSIDE");
-        System.out.println("\nAfter external tag mutation: " + t);
 
-        // Starter compiles; after refactor, you should redesign updates to create new objects instead.
+        try {
+            tags.add("HACKED_FROM_OUTSIDE");
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Cannot modify tags from outside! Ticket is immutable.");
+        }
+
+        System.out.println("\nFinal ticket state:");
+        System.out.println(t);
+
+        IncidentTicket original = service.createTicket(
+                "TCK-2001",
+                "reporter2@example.com",
+                "Login issue");
+
+        IncidentTicket updated = service.assign(original, "agent2@example.com");
+
+        System.out.println("\nOriginal ticket:");
+        System.out.println(original);
+
+        System.out.println("\nUpdated ticket (different instance):");
+        System.out.println(updated);
+
+        System.out.println("\nAre original and updated same object? "
+                + (original == updated));
     }
 }
