@@ -10,11 +10,11 @@ public class OrderService {
         this.gateways = Objects.requireNonNull(gateways, "gateways");
     }
 
-    // Smell: still switches; your refactor should remove this by ensuring map contains adapters.
     public String charge(String provider, String customerId, int amountCents) {
-        Objects.requireNonNull(provider, "provider");
-        PaymentGateway gw = gateways.get(provider);
-        if (gw == null) throw new IllegalArgumentException("unknown provider: " + provider);
-        return gw.charge(customerId, amountCents);
+        PaymentGateway gateway = gateways.get(provider);
+        if (gateway == null) {
+            throw new IllegalArgumentException("Unknown provider: " + provider);
+        }
+        return gateway.charge(customerId, amountCents);
     }
 }
